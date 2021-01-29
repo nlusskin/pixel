@@ -1,8 +1,17 @@
 import { Table, Form, Input, Button, Row, Col } from 'antd'
 import dayjs from 'dayjs'
+import UTC from 'dayjs/plugin/utc'
 import React from 'react'
 
 import { useAPI } from '../hooks/useAPI'
+
+dayjs.extend(UTC)
+
+const dateFormatString = 'ddd, MMM D YYYY ~ HH:mm:ss'
+function formatDate(e:PixelRecord['events']): string {
+  if (e.length === 0) return ''
+  return dayjs(e?.[(e.length || 1) - 1]?.timestamp).local().format(dateFormatString)
+}
 
 const cols = [
   {
@@ -18,19 +27,22 @@ const cols = [
   {
     title: 'Sent',
     dataIndex: 'sentAt',
-    key: 'sentAt'
+    key: 'sentAt',
+    render: (t:Date) => dayjs(t).local().format(dateFormatString),
+    sorter: (a:PixelRecord, b:PixelRecord) => dayjs(a.sentAt).valueOf() - dayjs(b.sentAt).valueOf(),
+    defaultSortOrder: 'descend'
   },
   {
     title: 'Last Read',
     dataIndex: 'events',
     key: 'events',
-    render: (e:PixelRecord['events']) => e?.[(e.length || 1) - 1]?.timestamp
+    render: (e:PixelRecord['events']) => formatDate(e)
   },
   {
     title: 'Read Count',
     dataIndex: 'events',
     key: 'events',
-    render: (e:PixelRecord['events']) => e.length
+    render: (e:PixelRecord['events']) => e.length == 0 ? '' : e.length
   },
   {
     title: 'Location',
@@ -44,7 +56,8 @@ const innerCols = [
   {
     title: 'Timestamp',
     dataIndex: 'timestamp',
-    key: 'timestamp'
+    key: 'timestamp',
+    render: (t:Date) => dayjs(t).format(dateFormatString)
   },
   {
     title: 'Location',
@@ -52,6 +65,10 @@ const innerCols = [
     key: 'location'
   },
 ]
+
+function img(id:string) {
+  return `<img src='https://pixel.vercel.app/api/t/${id}' alt='' width='1' height='1' />`
+}
 
 export default function View() {
 
@@ -61,11 +78,21 @@ export default function View() {
   const onSubmit = (v:any) => {
     create(v)
   }
-  React.useEffect(refresh, [created])
+  React.useEffect(() => {
+    refresh()
+    console.log('created',created)
+    if (created?.[0]?.id)
+      navigator.clipboard.writeText(img(created[0].id))
+  }, [created])
 
 
   const expandedRowRender = (v) => { 
-    return <Table columns={innerCols} dataSource={v.events} pagination={false} />
+    return (
+      <div>
+        <a href='#'>{v.id}</a>
+        <Table columns={innerCols} dataSource={v.events} pagination={false} />
+      </div>
+    )
   }
 
   return (
@@ -98,6 +125,7 @@ export default function View() {
         dataSource={data?.map(d => { return {...d, key: d.id} })}
         expandable={{ expandedRowRender }}
       />
+      <Button onClick={() => navigator.clipboard.writeText('text text')}>Copy</Button>
     </div>
   )
 }

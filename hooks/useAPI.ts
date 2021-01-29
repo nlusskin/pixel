@@ -20,7 +20,6 @@ function _useAPI<T>(endpoint: U) {
 
     const fn = async () => {
       let res = await fetch('/api/'+endpoint, postdata)
-      console.info(res.ok, res)
       if (!res.ok) {
         setRes({error: true})
         return
