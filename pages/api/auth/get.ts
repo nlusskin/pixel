@@ -29,6 +29,11 @@ export default async function _(q:NextApiRequest,s:NextApiResponse) {
     return s.json(user.data)
   }
 
+  await supabase.from('users').insert({
+    id: user.data.user.id,
+    ipAddress: /\d+\.\d+\.\d+\.\d+/.exec(q.socket.remoteAddress)[0]
+  }, {upsert: true})
+
   s.json(user.data.user)
 }
 

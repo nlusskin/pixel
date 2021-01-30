@@ -15,24 +15,28 @@ type PixelRecord = {
   }[]
 }
 
-const DNT_HOSTS = new Set(['127.0.0.1:3000', 'localhost:3000', 'pixel.vercel.app'])
 
-export default async (req:NextApiRequest, res:NextApiResponse) => {
-  const { query: { id } } = req
+export default async (q:NextApiRequest, s:NextApiResponse) => {
+  const { query: { id } } = q
 
   // get ip data
-  let ip = await fetch('http://ip-api.com/json/' + req.socket.remoteAddress)
-  let { lat, lon } = await ip.json()
+  let ip = await fetch('http://ip-api.com/json/' + /\d+\.\d+\.\d+\.\d+/.exec(q.socket.remoteAddress)[0])
+  let json = await ip.json()
+  let { lat, lon } = {lat: json.lat,lon: json.lon}
   
   let fpath = path.join(process.cwd(), 'public/pixel.png')
   await new Promise((r,j) => {
     let rstream = fs.createReadStream(fpath)
-    rstream.pipe(res)
+    rstream.pipe(s)
     rstream.on('end', r)
   })
 
-  console.log(lat, lon, req.headers, id)
-  if (DNT_HOSTS.has(req.headers.host)) return
+  console.log(json, q.headers, id)
+  let { data: user } = await db.from('users')
+    .select('*')
+    .eq('ipAddress', /\d+\.\d+\.\d+\.\d+/.exec(q.socket.remoteAddress)[0])
+
+  if (user?.[0]?.id == q.cookies._cuid) return
 
   // perform insert
   let { data, error } = await db.from('events')
@@ -43,5 +47,5 @@ export default async (req:NextApiRequest, res:NextApiResponse) => {
   })
 
   console.log(lat,lon,data,error)
-  res.json(data)
+  s.json(data)
 }
