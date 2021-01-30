@@ -32,6 +32,7 @@ export default function Auth() {
   React.useEffect(() => {
     if (user?.error || created?.error) return onFail()
     console.info(user, created)
+    if (created) window.location.reload()
   }, [user, created])
   
   

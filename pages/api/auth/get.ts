@@ -14,7 +14,10 @@ export default async function _(q:NextApiRequest,s:NextApiResponse) {
   if (email && password) user = await passwordGrant(email, password)
   if (_cutok && _curef && _cuid && !email) user = await tokenGrant(_cutok, _curef, _cuid)
 
-  if (user.error || (!user.data.access_token && !user.data.user)) return s.status(403).send(null)
+  if (user.error || (!user.data.access_token && !user.data.user)) {
+    console.error(user.error) 
+    return s.status(403).send(null)
+  }
   
   if (user.data.access_token) {
     s.setHeader('SET-COOKIE', [
@@ -36,7 +39,7 @@ async function tokenGrant(_cutok:string, _curef:string, _cuid:string): Promise<A
     
     if (/expired/.test(user.error?.message)) {
       let {data: refUser} = await supabase.auth.api.refreshAccessToken(_curef)
-      console.info('REF:',refUser)
+      console.info('REF:',_curef,refUser)
       
       if(!refUser?.user?.id)
         return { error: new Error('Could not authenticate with provided token. Try using a password')}

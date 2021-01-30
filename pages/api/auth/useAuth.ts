@@ -3,7 +3,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 import AuthCheck from './get'
 
-export default async function _(q:NextApiRequest,_s?:NextApiResponse) {
+export default async function _(q:NextApiRequest,_s:NextApiResponse) {
 
   const s = new HttpResponseShim()
   // @ts-expect-error
@@ -29,4 +29,8 @@ class HttpResponseShim {
   }
 
   setHeader = (o:string, p:[]) => { }
+
+  status = (c:number) => {
+    return { send: (d:any) => { } } 
+  }
 }
