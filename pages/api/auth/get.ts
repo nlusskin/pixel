@@ -12,10 +12,10 @@ export default async function _(q:NextApiRequest,s:NextApiResponse) {
 
   let user = {} as AuthReturnType
   if (email && password) user = await passwordGrant(email, password)
-  if (_cutok && _curef && _cuid) user = await tokenGrant(_cutok, _curef, _cuid)
+  if (_cutok && _curef && _cuid && !email) user = await tokenGrant(_cutok, _curef, _cuid)
 
-  if (user.error) return s.status(403).send(user.error)
-
+  if (user.error || (!user.data.access_token && !user.data.user)) return s.status(403).send(null)
+  
   if (user.data.access_token) {
     s.setHeader('SET-COOKIE', [
       `_cutok=${user.data.access_token}; Path=/; Max-Age=864000; `,
@@ -29,31 +29,35 @@ export default async function _(q:NextApiRequest,s:NextApiResponse) {
   s.json(user.data.user)
 }
 
-
-
 // TOKEN
 async function tokenGrant(_cutok:string, _curef:string, _cuid:string): Promise<AuthReturnType> {
-  const user = await supabase.auth.api.getUser(_cutok)
-
-  if (/expired/.test(user.error?.message)) {
-    let {data: refUser} = await supabase.auth.api.refreshAccessToken(_curef)
+  try {
+    const user = await supabase.auth.api.getUser(_cutok)
     
-    if(refUser.user.id != _cuid)
-      return { error: new Error('ID doesn\'t match')}
-    
-    if(!refUser.user.id)
-      return { error: new Error('Could not authenticate with provided token. Try using a password')}
+    if (/expired/.test(user.error?.message)) {
+      let {data: refUser} = await supabase.auth.api.refreshAccessToken(_curef)
+      console.info('REF:',refUser)
+      
+      if(!refUser?.user?.id)
+        return { error: new Error('Could not authenticate with provided token. Try using a password')}
+      if(refUser?.user?.id != _cuid)
+        return { error: new Error('ID doesn\'t match')}
+      
 
-    return { data: refUser }
-  }
-  return { 
-    data: {
-      access_token: '',
-      refresh_token: '',
-      expires_in: 0,
-      token_type: '',
-      user: user.data
+      return { data: refUser }
     }
+    return { 
+      data: {
+        access_token: '',
+        refresh_token: '',
+        expires_in: 0,
+        token_type: '',
+        user: user.data
+      }
+    }
+  }
+  catch (e) {
+    return { error: e}
   }
 }
 

@@ -20,6 +20,7 @@ function _useAPI<T>(endpoint: U) {
 
     const fn = async () => {
       let res = await fetch('/api/'+endpoint, postdata)
+      console.info('json',res)
       if (!res.ok) {
         setRes({error: true})
         return
@@ -28,15 +29,14 @@ function _useAPI<T>(endpoint: U) {
       try {
         json = await res.json()
       }
-      catch (e) { }
+      catch (e) { console.error(e) }
       setRes(json)
     }
 
-    if (/(list)/.test(endpoint) || data)
-      fn()
+    fn()
   }, [])
 
-  React.useEffect(_call, [])
+  React.useEffect(() => { if (/(list)/.test(endpoint)) { _call() } }, [])
 
   return {data: res, call: _call }
 }

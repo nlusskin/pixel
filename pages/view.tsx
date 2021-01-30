@@ -71,10 +71,6 @@ const innerCols = [
 function img(id:string) {
   return `<img src='https://pixel.vercel.app/api/t/${id}' alt='' width='1' height='1' />`
 }
-function imgCopy(text:string) {
-  // @ts-ignore
-  navigator.clipboard.write([new ClipboardItem({'text/html': text})])
-}
 
 export default function View() {
 
@@ -95,8 +91,7 @@ export default function View() {
   const expandedRowRender = (v) => { 
     return (
       <div>
-        <div className='w-2 h-2 bg-blue-200'><img ref={imgRef} src={`/api/t/${v.id}`} alt='' /></div>
-        <p className='text-blue-500 cursor-pointer' onClick={() => imgCopy(img(v.id))}>{img(v.id)}</p>
+        <p className='text-blue-500 cursor-pointer' onClick={() => Copy(img(v.id))}>{img(v.id)}</p>
         <Table columns={innerCols} dataSource={v.events} pagination={false} />
       </div>
     )
