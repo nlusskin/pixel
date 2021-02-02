@@ -11,5 +11,7 @@ export default async (req:NextApiRequest, res:NextApiResponse) => {
     events(*)
 
   `)
+  .eq('user', req.cookies['_cuid'])
+
   res.json(data)
 }

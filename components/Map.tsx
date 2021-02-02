@@ -14,11 +14,19 @@ declare namespace mapkit {
 
 export default function Map(p:Iprops) {
 
+  // only render if coords are provided
+  if (typeof p.coords?.[0] !== 'number' || typeof p.coords?.[1] !== 'number') return null
+
   const {data: token, call: fetchToken } = useAPI('maptoken')
   React.useEffect(fetchToken, [])
   React.useEffect(() => console.log(token), [token])
 
-  const [loc, setLoc] = React.useState({formattedAddress: null})
+  const [loc, setLoc] = React.useState({
+    formattedAddress: null,
+    locality: null,
+    administrativeAreaCode: null,
+    countryCode: null
+  })
 
   React.useEffect(() => {
     if(!token || !p.coords || p.display !== 'address') return
@@ -40,10 +48,10 @@ export default function Map(p:Iprops) {
 
   if (!token || !p.coords) return <p>Loading...</p>
 
-  if (p.display == 'address') return <p>{loc.formattedAddress}</p>
+  if (p.display == 'address') return <p>{loc.locality}, {loc.administrativeAreaCode}, {loc.countryCode}</p>
 
   return (
-    <div className='w-1/3 h-48'>
+    <div className='w-full h-48'>
       <MKMap tokenOrCallback={token.maptoken as string} center={p.coords}>
         <Marker latitude={p.coords[0]} longitude={p.coords[1]} />
       </MKMap>

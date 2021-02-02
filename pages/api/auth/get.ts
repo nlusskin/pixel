@@ -34,7 +34,7 @@ export default async function _(q:NextApiRequest,s:NextApiResponse) {
     id: user.data.user.id,
     ipAddress: q.headers['x-forwarded-for']
   }], {upsert: true})
-  console.info(ipdata,iperr, q.headers['x-forwarded-for'])
+  console.info(ipdata,iperr, q.headers)
 
   s.json(user.data.user)
 }
@@ -52,10 +52,13 @@ async function tokenGrant(_cutok:string, _curef:string, _cuid:string): Promise<A
         return { error: new Error('Could not authenticate with provided token. Try using a password')}
       if(refUser?.user?.id != _cuid)
         return { error: new Error('ID doesn\'t match')}
-      
 
       return { data: refUser }
     }
+
+    if(user?.data?.id != _cuid)
+      return { error: new Error('ID doesn\'t match')}
+      
     return { 
       data: {
         access_token: '',

@@ -32,11 +32,16 @@ export default async (q:NextApiRequest, s:NextApiResponse) => {
   })
 
   console.log(json, q.headers, id)
-  let { data: user } = await db.from('users')
-    .select('*')
-    .eq('ipAddress', q.headers['x-forwarded-for'])
-
-  if (user?.[0]?.id == q.cookies._cuid) return
+  let { data: user } = await db.from('pixels')
+    .select(`
+      user(
+        ipAddress
+      )
+    `)
+    .eq('id', id)
+  
+    console.info(user[0].ipAddress)
+  if (user?.[0]?.user?.ipAddress == q.headers['x-forwarded-for']) return
 
   // perform insert
   let { data, error } = await db.from('events')

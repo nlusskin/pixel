@@ -1,6 +1,6 @@
 import { Table, Form, Input, Button, Row, Col } from 'antd'
 import { SortOrder } from 'antd/lib/table/interface'
-import Copy from 'copy-html-to-clipboard'
+import _copy from 'copy-html-to-clipboard'
 import dayjs from 'dayjs'
 import UTC from 'dayjs/plugin/utc'
 import React from 'react'
@@ -68,12 +68,17 @@ const innerCols = [
   {
     title: 'Location',
     dataIndex: 'location',
-    key: 'location'
+    key: 'location',
+    render: l => <Map coords={l} />
   },
 ]
 
 function img(id:string) {
   return `<img src='https://pixel.vercel.app/api/t/${id}' alt='' width='1' height='1' />`
+}
+
+function Copy(t:string) {
+  _copy(t, { asHtml: true})
 }
 
 export default function View() {
@@ -126,12 +131,13 @@ export default function View() {
             </Button>
         </Row>
       </Form>
+      <Button onClick={() => refresh()}>Refresh</Button>
       <Table
         columns={cols}
         dataSource={data?.map(d => { return {...d, key: d.id} })}
         expandable={{ expandedRowRender }}
       />
-      <Button onClick={async () => Copy(img('fdfa66cf-f265-4e55-8de2-9ead8d6ca766'), { asHtml: true, debug: true })}>Copy</Button>
+      {/* <Button onClick={async () => Copy(img('fdfa66cf-f265-4e55-8de2-9ead8d6ca766'), { asHtml: true, debug: true })}>Copy</Button> */}
       
     </div>
   )
