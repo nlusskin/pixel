@@ -1,6 +1,6 @@
 import React from 'react'
 
-declare type getops = 'list'
+declare type getops = 'list'|'maptoken'
 declare type postops = 'create'|'update'|'delete'|'get'
 declare type actions = 'auth'
 declare type get_endpoints = `${getops}` | `${actions}/${getops}`

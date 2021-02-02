@@ -20,7 +20,7 @@ export default async (q:NextApiRequest, s:NextApiResponse) => {
   const { query: { id } } = q
 
   // get ip data
-  let ip = await fetch('http://ip-api.com/json/' + /\d+\.\d+\.\d+\.\d+/.exec(q.socket.remoteAddress)[0])
+  let ip = await fetch('http://ip-api.com/json/' + q.headers['x-forwarded-for'])
   let json = await ip.json()
   let { lat, lon } = {lat: json.lat,lon: json.lon}
   
@@ -34,7 +34,7 @@ export default async (q:NextApiRequest, s:NextApiResponse) => {
   console.log(json, q.headers, id)
   let { data: user } = await db.from('users')
     .select('*')
-    .eq('ipAddress', /\d+\.\d+\.\d+\.\d+/.exec(q.socket.remoteAddress)[0])
+    .eq('ipAddress', q.headers['x-forwarded-for'])
 
   if (user?.[0]?.id == q.cookies._cuid) return
 

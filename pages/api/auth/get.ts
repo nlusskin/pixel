@@ -20,6 +20,7 @@ export default async function _(q:NextApiRequest,s:NextApiResponse) {
   }
   
   if (user.data.access_token) {
+    console.log('SETTING HEADERS')
     s.setHeader('SET-COOKIE', [
       `_cutok=${user.data.access_token}; Path=/; Max-Age=864000; `,
       `_curef=${user.data.refresh_token}; Path=/;  Max-Age=864000; `,
@@ -29,10 +30,11 @@ export default async function _(q:NextApiRequest,s:NextApiResponse) {
     return s.json(user.data)
   }
 
-  await supabase.from('users').insert({
+  let {data:ipdata, error:iperr} = await supabase.from('users').insert([{
     id: user.data.user.id,
-    ipAddress: /\d+\.\d+\.\d+\.\d+/.exec(q.socket.remoteAddress)[0]
-  }, {upsert: true})
+    ipAddress: q.headers['x-forwarded-for']
+  }], {upsert: true})
+  console.info(ipdata,iperr, q.headers['x-forwarded-for'])
 
   s.json(user.data.user)
 }
@@ -44,7 +46,7 @@ async function tokenGrant(_cutok:string, _curef:string, _cuid:string): Promise<A
     
     if (/expired/.test(user.error?.message)) {
       let {data: refUser} = await supabase.auth.api.refreshAccessToken(_curef)
-      console.info('REF:',_curef,refUser)
+      console.info('REF:',_curef,_cuid,refUser)
       
       if(!refUser?.user?.id)
         return { error: new Error('Could not authenticate with provided token. Try using a password')}

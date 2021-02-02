@@ -1,18 +1,21 @@
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Form, Input, Button, message, Tabs } from 'antd'
 import React from 'react'
+
+import AppContext from '../hooks/context'
 import { useAPI } from '../hooks/useAPI'
 
-
+// Form layout statics
 const layout = {
   labelCol: { span: 8 },
   wrapperCol: { span: 14 },
 }
 const tailLayout = {
   wrapperCol: { offset: 8, span: 16 },
-};
+}
 
 export default function Auth() {
+  const context = React.useContext(AppContext)
 
   const [action, setAction] = React.useState('login')
 
@@ -20,8 +23,7 @@ export default function Auth() {
   const { data: user, call: getUser } = useAPI('auth/get')
 
 
-  // Edit logic
-  
+  // Form logic
   const onSubmit = (v:any) => {
     if (action == 'signup') createUser(v)
     if (action == 'login') getUser(v)
@@ -29,11 +31,15 @@ export default function Auth() {
   const onFail = () => {
     message.error('Login failed')
   }
+
+
   React.useEffect(() => {
     if (user?.error || created?.error) return onFail()
-    console.info(user, created)
-    if (created) window.location.reload()
+    console.info('auth state', user, created)
+    if (created || user) context.setState({userAuth: user})
   }, [user, created])
+  
+  React.useEffect(() => getUser(null), [])
   
   
   return (

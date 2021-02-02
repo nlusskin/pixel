@@ -4,6 +4,7 @@ import Copy from 'copy-html-to-clipboard'
 import dayjs from 'dayjs'
 import UTC from 'dayjs/plugin/utc'
 import React from 'react'
+import Map from '../components/Map'
 
 import { useAPI } from '../hooks/useAPI'
 
@@ -50,7 +51,10 @@ const cols = [
     title: 'Location',
     dataIndex: 'events',
     key: 'events',
-    render: (e:PixelRecord['events']) => e?.[(e.length || 1) - 1]?.location
+    render: (e:PixelRecord['events']) => {
+      let coords = e?.[(e.length || 1) - 1]?.location
+      return <Map coords={coords} display='address' />
+    }
   }
 ]
 
@@ -128,6 +132,7 @@ export default function View() {
         expandable={{ expandedRowRender }}
       />
       <Button onClick={async () => Copy(img('fdfa66cf-f265-4e55-8de2-9ead8d6ca766'), { asHtml: true, debug: true })}>Copy</Button>
+      
     </div>
   )
 }
