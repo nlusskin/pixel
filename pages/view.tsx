@@ -63,7 +63,10 @@ const innerCols = [
     title: 'Timestamp',
     dataIndex: 'timestamp',
     key: 'timestamp',
-    render: (t:Date) => dayjs(t).format(dateFormatString)
+    render: (t:Date) => dayjs(t).format(dateFormatString),
+    defaultSortOrder: 'descend' as SortOrder,
+    sorter: (a:PixelRecord['events'][0], b:PixelRecord['events'][0]) =>
+            dayjs(a.timestamp).valueOf() - dayjs(b.timestamp).valueOf()
   },
   {
     title: 'Location',
@@ -73,10 +76,12 @@ const innerCols = [
   },
 ]
 
+// generate img html tag
 function img(id:string) {
   return `<img src='https://pixel.vercel.app/api/t/${id}' alt='' width='1' height='1' />`
 }
 
+// copy html to clipboard
 function Copy(t:string) {
   _copy(t, { asHtml: true})
 }
@@ -86,15 +91,13 @@ export default function View() {
   let {data, call: refresh} = useAPI<PixelRecord[]>('list')
   let {data: created, call: create} = useAPI('create')
 
-  const imgRef = React.useRef(null)
-
   const onSubmit = (v:any) => {
     create(v)
   }
   React.useEffect(() => {
     refresh()
     if (created?.[0]?.id)
-      navigator.clipboard.writeText(img(created[0].id))
+      Copy(img(created[0].id))
   }, [created])
 
   const expandedRowRender = (v) => { 

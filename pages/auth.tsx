@@ -35,7 +35,6 @@ export default function Auth() {
 
   React.useEffect(() => {
     if (user?.error || created?.error) return onFail()
-    console.info('auth state', user, created)
     if (created || user) context.setState({userAuth: user})
   }, [user, created])
   

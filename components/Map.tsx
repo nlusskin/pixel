@@ -19,7 +19,6 @@ export default function Map(p:Iprops) {
 
   const {data: token, call: fetchToken } = useAPI('maptoken')
   React.useEffect(fetchToken, [])
-  React.useEffect(() => console.log(token), [token])
 
   const [loc, setLoc] = React.useState({
     formattedAddress: null,
@@ -51,7 +50,7 @@ export default function Map(p:Iprops) {
   if (p.display == 'address') return <p>{loc.locality}, {loc.administrativeAreaCode}, {loc.countryCode}</p>
 
   return (
-    <div className='w-full h-48'>
+    <div className='w-full h-36'>
       <MKMap tokenOrCallback={token.maptoken as string} center={p.coords}>
         <Marker latitude={p.coords[0]} longitude={p.coords[1]} />
       </MKMap>
