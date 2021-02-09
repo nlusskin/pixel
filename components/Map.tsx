@@ -9,6 +9,7 @@ declare namespace mapkit {
   let init: any
   let Geocoder: any
   let Coordinate: any
+  let addEventListener: any
 }
 
 
@@ -42,6 +43,7 @@ export default function Map(p:Iprops) {
         if (err) console.error(err)
         setLoc(data.results[0])
       })
+      mapkit.addEventListener('error', setTimeout(() => fetchToken(), 750))
     })
   }, [token])
 

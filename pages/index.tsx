@@ -8,7 +8,6 @@ import AppContext from '../hooks/context'
 export default function Home() {
   const [state, _setState] = React.useState<any>({})
   const setState = (newState: object) => {
-    console.log('ns',newState)
     _setState({...state, ...newState})
   }
 
