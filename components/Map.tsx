@@ -2,8 +2,10 @@
 import { Map as MKMap, Marker } from 'react-mapkit'
 import React from 'react'
 import load from 'little-loader'
+//const mapkit = require('https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.js')
 
 import { useAPI } from '../hooks/useAPI'
+import Address from './Address'
 
 declare namespace mapkit { 
   let init: any
@@ -11,7 +13,6 @@ declare namespace mapkit {
   let Coordinate: any
   let addEventListener: any
 }
-
 
 export default function Map(p:Iprops) {
 
@@ -21,44 +22,17 @@ export default function Map(p:Iprops) {
   const {data: token, call: fetchToken } = useAPI('maptoken')
   React.useEffect(fetchToken, [])
 
-  const [loc, setLoc] = React.useState({
-    formattedAddress: null,
-    locality: null,
-    administrativeAreaCode: null,
-    countryCode: null
-  })
-
-  React.useEffect(() => {
-    if(!token || !p.coords || p.display !== 'address') return
-    load('https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.js', () => {
-
-      // init mapkit
-      mapkit.init({
-        authorizationCallback: (done) => {
-          done(token.maptoken)
-        }
-      })
-      let geocoder = new mapkit.Geocoder({ language: 'en-GB', getUserLocation: false})
-      geocoder.reverseLookup(new mapkit.Coordinate(p.coords[0], p.coords[1]), (err,data) => {
-        if (err) console.error(err)
-        setLoc(data.results[0])
-      })
-      mapkit.addEventListener('error', setTimeout(() => fetchToken(), 750))
-    })
-  }, [token])
-
-  if (!token || !p.coords) return <p>Loading...</p>
-
-  if (p.display == 'address') return <p>{loc.locality}, {loc.administrativeAreaCode}, {loc.countryCode}</p>
+  if (p.display == 'address') return <Address coords={p.coords} token={token?.maptoken} />
 
   return (
     <div className='w-full h-36'>
-      <MKMap tokenOrCallback={token.maptoken as string} center={p.coords}>
+      <MKMap tokenOrCallback={token?.maptoken as string} center={p.coords}>
         <Marker latitude={p.coords[0]} longitude={p.coords[1]} />
       </MKMap>
     </div>
   )
 }
+
 
 type Iprops = {
   coords: [number, number]

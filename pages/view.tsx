@@ -91,19 +91,24 @@ export default function View() {
   let {data, call: refresh} = useAPI<PixelRecord[]>('list')
   let {data: created, call: create} = useAPI('create')
 
+  // create the new tracker
   const onSubmit = (v:any) => {
     create(v)
   }
+  // update the list after new tracker is created
   React.useEffect(() => {
     refresh()
     if (created?.[0]?.id)
       Copy(img(created[0].id))
   }, [created])
 
+  // auto refresh the list
+  React.useEffect(() => { setInterval(refresh, 300000) }, [])
+
   const expandedRowRender = (v) => { 
     return (
       <div>
-        <p className='text-blue-500 cursor-pointer' onClick={() => Copy(img(v.id))}>{img(v.id)}</p>
+        <p className='text-blue-500 cursor-pointer' onClick={() => Copy(img(v.id))}>Copy HTML</p>
         <Table columns={innerCols} dataSource={v.events} pagination={false} />
       </div>
     )
@@ -140,7 +145,6 @@ export default function View() {
         dataSource={data?.map(d => { return {...d, key: d.id} })}
         expandable={{ expandedRowRender }}
       />
-      {/* <Button onClick={async () => Copy(img('fdfa66cf-f265-4e55-8de2-9ead8d6ca766'), { asHtml: true, debug: true })}>Copy</Button> */}
       
     </div>
   )
